@@ -1,0 +1,13 @@
+load("@rules_python//python:defs.bzl", "py_library")
+
+py_library(
+    name = "src",
+    srcs = glob(["*.py"]),
+    visibility = ["//visibility:public"],
+    deps = [
+        "//src/readers:readers",
+        "//src/transformations:transformations",
+        "//src/writers:writers",
+        "//src/utils:utils",
+    ],
+)
