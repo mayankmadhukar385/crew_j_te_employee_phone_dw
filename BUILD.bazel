@@ -2,7 +2,8 @@ load("@rules_python//python:defs.bzl", "py_binary")
 
 py_binary(
     name = "pipeline",
-    srcs = ["//src:pipeline.py"],
+    srcs = ["pipeline.py"],
+    main = "pipeline.py",
     deps = [
         "//src/readers:readers",
         "//src/transformations:transformations",
