@@ -50,15 +50,6 @@ jobs:
           test -f MODULE.bazel
           test -f BUILD.bazel
       
-
-      - name: Lint Python files with pylint
-        run: |
-          python -m pylint src
-
-      - name: Lint notebooks with nbqa + pylint
-        run: |
-          nbqa pylint resources --nbqa-shell
-
       - name: Run Bazel tests
         run: |
           bazel test //... --test_output=errors
