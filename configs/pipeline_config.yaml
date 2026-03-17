@@ -1,7 +1,13 @@
+variables:
+  UNITY_CATALOG:
+    default: crew_j_te_employee_phone_dw
+  UNITY_SCHEMA:
+    default: bronze
+
 pipeline:
   job_name: CREW_J_TE_EMPLOYEE_PHONE_DW
   run_mode: full_refresh
-  catalog: "${UNITY_CATALOG}"
+  catalog: "${var.UNITY_CATALOG}"
   schema: "${UNITY_SCHEMA}"
 
 source:
