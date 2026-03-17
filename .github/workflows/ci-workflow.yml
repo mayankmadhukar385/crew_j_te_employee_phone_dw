@@ -39,7 +39,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install -r requirements-pyspark.txt
+          pip install -r requirements.txt
           pip install "pytest>=8.0.0" "pytest-html>=4.1.1"
           pip install "pylint>=3.2.0" "nbqa>=1.8.0"
 
