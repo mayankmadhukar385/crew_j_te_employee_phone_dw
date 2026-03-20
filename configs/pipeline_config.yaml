@@ -3,6 +3,10 @@ variables:
     default: crew_j_te_employee_phone_dw
   UNITY_SCHEMA:
     default: bronze
+  TD_WORK_DB:
+    default: CREW_WORK_DB
+  TD_DB:
+    default: CREW_DW
 
 pipeline:
   job_name: CREW_J_TE_EMPLOYEE_PHONE_DW
