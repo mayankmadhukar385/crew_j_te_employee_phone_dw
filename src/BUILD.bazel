@@ -1,4 +1,4 @@
-load("@rules_python//python:defs.bzl", "py_library")
+load("@rules_python//python:defs.bzl", "py_binary", "py_library")
 
 py_library(
     name = "src",
@@ -10,4 +10,13 @@ py_library(
         "//src/writers:writers",
         "//src/utils:utils",
     ],
+)
+
+py_binary(
+    name = "pipeline",
+    srcs = ["pipeline.py"],
+    deps = [
+        ":src",
+    ],
+    visibility = ["//visibility:public"],
 )

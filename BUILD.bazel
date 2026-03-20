@@ -2,12 +2,10 @@ load("@rules_python//python:defs.bzl", "py_binary")
 
 py_binary(
     name = "pipeline",
-    srcs = ["src/pipeline.py"],
+    srcs = [],
+    main = "src/pipeline.py",
     deps = [
-        "//src/readers:readers",
-        "//src/transformations:transformations",
-        "//src/writers:writers",
-        "//src/utils:utils",
+        "//src:src",
     ],
     visibility = ["//visibility:public"],
 )
