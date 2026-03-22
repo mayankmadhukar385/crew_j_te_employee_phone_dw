@@ -7,9 +7,9 @@ py_test(
     deps = [
         "//src:src_lib",
         "@pip//pytest",
+        "@pip//pytest_cov",
         "@pip//chispa",
         "@pip//pyspark",
-        "@pip//py4j",
         "@pip//delta_spark",
         "@pip//pyyaml",
     ],
