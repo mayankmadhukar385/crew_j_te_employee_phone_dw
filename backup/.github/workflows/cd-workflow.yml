@@ -1,0 +1,139 @@
+name: CD Workflow (Manual - Deploy PR to stage and prod)
+
+on:
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: "PR number to deploy (e.g., 123)"
+        required: true
+
+run-name: Deploy PR #${{ inputs.pr_number }} to stage and prod
+
+jobs:
+  cd-deploy-stage:
+    name: Deploy to stage
+    runs-on: ubuntu-latest
+    environment: stage
+
+    permissions:
+      contents: read
+      pull-requests: read
+
+    steps:
+      - name: Resolve PR HEAD SHA and validate base branch
+        id: pr
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ inputs.pr_number }}
+          REPO: ${{ github.repository }}
+        run: |
+          SHA=$(gh api "repos/$REPO/pulls/$PR_NUMBER" --jq '.head.sha')
+          BASE=$(gh api "repos/$REPO/pulls/$PR_NUMBER" --jq '.base.ref')
+          echo "PR base branch: $BASE"
+          if [ "$BASE" != "main" ]; then
+            echo "ERROR: PR must target main. Found base=$BASE"
+            exit 1
+          fi
+          echo "sha=$SHA" >> "$GITHUB_OUTPUT"
+
+      - name: Checkout PR code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.pr.outputs.sha }}
+          fetch-depth: 0
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Databricks CLI
+        run: curl -fsSL https://raw.githubusercontent.com/databricks/setup-cli/main/install.sh | sh
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install setuptools wheel
+
+      - name: Configure Databricks (PAT)
+        env:
+          DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
+          DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
+        run: databricks current-user me
+
+      - name: Validate bundle
+        env:
+          DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
+          DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
+        run: databricks bundle validate --target stage
+
+      - name: Deploy bundle
+        env:
+          DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
+          DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
+        run: databricks bundle deploy --target stage
+
+  cd-deploy-prod:
+    name: Deploy to prod
+    needs: cd-deploy-stage
+    runs-on: ubuntu-latest
+    environment: prod
+
+    permissions:
+      contents: read
+      pull-requests: read
+
+    steps:
+      # Resolve again (separate job). Same PR -> same SHA.
+      - name: Resolve PR HEAD SHA and validate base branch
+        id: pr
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ inputs.pr_number }}
+          REPO: ${{ github.repository }}
+        run: |
+          SHA=$(gh api "repos/$REPO/pulls/$PR_NUMBER" --jq '.head.sha')
+          BASE=$(gh api "repos/$REPO/pulls/$PR_NUMBER" --jq '.base.ref')
+          echo "PR base branch: $BASE"
+          if [ "$BASE" != "main" ]; then
+            echo "ERROR: PR must target main. Found base=$BASE"
+            exit 1
+          fi
+          echo "sha=$SHA" >> "$GITHUB_OUTPUT"
+
+      - name: Checkout PR code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.pr.outputs.sha }}
+          fetch-depth: 0
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Databricks CLI
+        run: curl -fsSL https://raw.githubusercontent.com/databricks/setup-cli/main/install.sh | sh
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install setuptools wheel
+
+      - name: Configure Databricks (PAT)
+        env:
+          DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
+          DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
+        run: databricks current-user me
+
+      - name: Validate bundle
+        env:
+          DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
+          DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
+        run: databricks bundle validate --target prod
+
+      - name: Deploy bundle
+        env:
+          DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
+          DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
+        run: databricks bundle deploy --target prod

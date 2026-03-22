@@ -1,0 +1,29 @@
+load("@rules_python//python:defs.bzl", "py_binary", "py_library")
+
+py_library(
+    name = "src_lib",
+    srcs = glob(
+        ["*.py"],
+        exclude = ["pipeline.py"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        "//src/readers:readers",
+        "//src/transformations:transformations",
+        "//src/writers:writers",
+        "//src/utils:utils",
+    ],
+)
+
+py_binary(
+    name = "pipeline",
+    srcs = ["pipeline.py"],
+    deps = [
+        ":src_lib",
+        "//src/readers:readers",
+        "//src/transformations:transformations",
+        "//src/writers:writers",
+        "//src/utils:utils",
+    ],
+    visibility = ["//visibility:public"],
+)

@@ -1,0 +1,12 @@
+line-length = 120
+target-version = "py310"
+
+[lint]
+select = ["E", "F", "I", "N", "W", "UP", "S", "B", "A", "C4", "SIM", "TCH", "D"]
+ignore = ["D100", "D104"]
+
+[lint.pydocstyle]
+convention = "google"
+
+[lint.isort]
+known-first-party = ["src"]
