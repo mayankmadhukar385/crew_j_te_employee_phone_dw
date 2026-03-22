@@ -5,12 +5,13 @@ py_test(
     srcs = glob(["**/*.py"]),
     main = "pytest_main.py",
     deps = [
-        "//src:src_lib",
-        "@pip//pytest",
-        "@pip//pytest_cov",
-        "@pip//chispa",
-        "@pip//pyspark",
-        "@pip//delta_spark",
-        "@pip//pyyaml",
-    ],
+    "//src:src_lib",
+    "@pip//pytest",
+    "@pip//pytest_cov",
+    "@pip//coverage",
+    "@pip//chispa",
+    "@pip//pyspark",
+    "@pip//delta_spark",
+    "@pip//pyyaml",
+]
 )
