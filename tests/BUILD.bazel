@@ -2,10 +2,7 @@ load("@rules_python//python:defs.bzl", "py_test")
 
 py_test(
     name = "tests",
-    srcs = glob(
-        ["**/*.py"],
-        exclude = ["fixtures/**"],
-    ),
+    srcs = glob(["**/*.py"]),
     main = "pytest_main.py",
     deps = [
         "//src:src_lib",
