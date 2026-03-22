@@ -11,5 +11,8 @@ py_test(
         "//src:src_lib",
         "@pip//pytest",
         "@pip//chispa",
+        "@pip//pyspark",
+        "@pip//delta_spark",
+        "@pip//pyyaml",
     ],
 )
