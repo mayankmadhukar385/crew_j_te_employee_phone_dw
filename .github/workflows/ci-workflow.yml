@@ -52,10 +52,10 @@ jobs:
       
       - name: Run Bazel tests
         run: |
-          bazel test //tests:tests --test_output=errors --verbose_failures || {
-          cat bazel-out/k8-fastbuild/testlogs/tests/tests/test.log || true
-          cat /home/runner/.bazel/execroot/_main/bazel-out/k8-fastbuild/testlogs/tests/tests/test.log || true
-          exit 1}
+          bazel test //... --test_output=errors --verbose_failures || {
+            find bazel-out -path "*testlogs/tests/tests/test.log" -exec sh -c 'echo "===== {} ====="; cat "{}"' \; || true
+            exit 1
+          }
 
       - name: Upload Bazel test logs
         if: always()
