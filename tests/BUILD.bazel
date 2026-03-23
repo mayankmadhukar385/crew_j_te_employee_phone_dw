@@ -13,5 +13,6 @@ py_test(
     "@pip//pyspark",
     "@pip//delta_spark",
     "@pip//pyyaml",
+    "@pip//py4j",
 ]
 )
