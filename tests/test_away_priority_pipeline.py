@@ -2,17 +2,22 @@
 
 import pytest
 from pyspark.sql import SparkSession
+from pyspark.sql.types import StructType, StructField, StringType
 
 from src.transformations.away_priority_pipeline import build_away_schedule
 from src.transformations.phone_router import route_by_phone_type
 from tests.fixtures.sample_data import make_source_row
 
 
-def _away_df(spark: SparkSession, row_override: dict):
-    row = make_source_row(**row_override)
-    df = spark.createDataFrame([row])
-    _, _, _, _, away_df, _ = route_by_phone_type(df, {})
-    return away_df
+def _away_df(spark, overrides):
+    row = make_source_row(overrides=overrides)
+
+    schema = StructType([
+        StructField(col, StringType(), True) for col in row.keys()
+    ])
+
+    df = spark.createDataFrame([row], schema=schema)
+    return build_away_schedule(df)
 
 
 def test_pivot_3_away_groups_produce_15_rows(spark):
