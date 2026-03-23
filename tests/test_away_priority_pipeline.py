@@ -1,7 +1,8 @@
 """Tests for away_priority_pipeline.py (mirrors home pipeline with CALL_LIST='AWAY')."""
 
 import pytest
-from pyspark.sql import SparkSession
+from pyspark.sql import SparkSession 
+from pyspark.sql import Row
 
 from src.transformations.away_priority_pipeline import build_away_schedule
 from src.transformations.phone_router import route_by_phone_type
@@ -10,7 +11,7 @@ from tests.fixtures.sample_data import make_source_row
 
 def _away_df(spark: SparkSession, row_override: dict):
     row = make_source_row(**row_override)
-    df = spark.createDataFrame([row])
+    df = spark.createDataFrame([Row(**row)])
     _, _, _, _, away_df, _ = route_by_phone_type(df, {})
     return away_df
 
