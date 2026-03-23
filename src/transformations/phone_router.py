@@ -63,7 +63,7 @@ def _null_clean_string(col_name: str) -> F.Column:
     trimmed = F.trim(F.coalesce(F.col(col_name), F.lit("")))
     return F.when(trimmed == "", F.lit(None).cast("string")).otherwise(trimmed).alias(col_name)
 
-def route_by_phone_type(df: DataFrame) -> tuple[DataFrame, DataFrame, DataFrame, DataFrame, DataFrame, DataFrame]:
+def route_by_phone_type(df: DataFrame, config: dict[str, Any]) -> tuple[DataFrame, DataFrame, DataFrame, DataFrame, DataFrame, DataFrame]:
     valid_emp = F.expr("try_cast(EMP_NBR as int) is not null")
     valid_ph = F.expr("try_cast(PH_NBR as bigint) is not null")
     valid_temp_ph = F.expr("try_cast(TEMP_PH_NBR as bigint) is not null")
