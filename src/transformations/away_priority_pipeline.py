@@ -50,14 +50,13 @@ def build_away_schedule(df: DataFrame) -> DataFrame:
 
     # INC_AWAY_PRTY_TFM: identical to INC_PRTY_TFM but CALL_LIST='AWAY'
     result = (
-        away_seq_df
-        .filter(
-            F.expr("try_cast(EMP_NBR as int) is not null") &
-            F.expr("try_cast(LKP_CALL_PRTY as int) is not null")
-        )
-        .withColumn("CALL_PRTY", F.col("CALL_PRTY") + F.lit(1))
-        .withColumn("CALL_LIST", F.lit("AWAY"))
-        .withColumn("TELE_HOME_PRI_FROM", _validate_time("TELE_HOME_PRI_FROM"))
-        .withColumn("TELE_HOME_PRI_TO", _validate_time("TELE_HOME_PRI_TO"))
+    away_seq_df
+    .filter(
+        F.expr("try_cast(EMP_NBR as int) is not null") &
+        F.expr("try_cast(LKP_CALL_PRTY as int) is not null")
     )
-    return result
+    .withColumn("CALL_PRTY", F.col("CALL_PRTY") + F.lit(1))
+    .withColumn("CALL_LIST", F.lit("AWAY"))
+    .withColumn("TELE_HOME_PRI_FROM", _validate_time("TELE_HOME_PRI_FROM"))
+    .withColumn("TELE_HOME_PRI_TO", _validate_time("TELE_HOME_PRI_TO"))
+    )
