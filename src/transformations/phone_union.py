@@ -5,8 +5,6 @@ The rename happens exactly here — not earlier, not later.
 """
 
 from pyspark.sql import DataFrame
-from pyspark.sql import functions as F
-
 from src.utils.logger import get_logger
 
 logger = get_logger(__name__)
