@@ -7,8 +7,11 @@ from src.transformations.phone_router import route_by_phone_type
 from tests.fixtures.sample_data import make_source_row
 
 
+from pyspark.sql.types import StructField, StructType, StringType
+
 def _make_df(spark: SparkSession, rows: list[dict]):
-    return spark.createDataFrame(rows)
+    schema = StructType([StructField(col, StringType(), True) for col in rows[0].keys()])
+    return spark.createDataFrame(rows, schema=schema)
 
 
 def test_emergency_routing(spark, config):

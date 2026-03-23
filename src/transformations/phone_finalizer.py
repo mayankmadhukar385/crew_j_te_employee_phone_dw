@@ -46,7 +46,7 @@ def finalize_phone_records(df: DataFrame) -> DataFrame:
     result = (
         df
         # Filter: isvalid("int64", PH_NBR)
-        .filter(F.col("PH_NBR").cast("long").isNotNull())
+        .filter(F.expr("try_cast(PH_NBR as bigint) is not null"))
         # EMP_NO: zero-pad to 9 chars
         .withColumn(
             "EMP_NO",

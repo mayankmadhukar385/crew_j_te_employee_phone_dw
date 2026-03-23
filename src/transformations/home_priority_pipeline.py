@@ -56,31 +56,13 @@ def _unpivot_seq_group(df: DataFrame, group: int) -> DataFrame:
 
 
 def _validate_time(col_name: str) -> F.Column:
-    """Return null if HHMM string is not a valid time, else trim and return value.
-
-    Implements DataStage INC_PRTY_TFM verbatim:
-    if not(isvalid("time", left(X,2):':':right(X,2):':00')) then setnull()
-    else trimleadingtrailing(X)
-
-    Args:
-        col_name: Column name containing a 4-character HHMM time string.
-
-    Returns:
-        Column expression — null if invalid, trimmed string if valid.
-    """
-    formatted = F.concat(
-    F.substring(F.col(col_name), 1, 2),
-    F.lit(":"),
-    F.substring(F.col(col_name), 3, 2),
-    F.lit(":00"),)
-
     hour = F.substring(F.col(col_name), 1, 2).cast("int")
     minute = F.substring(F.col(col_name), 3, 2).cast("int")
 
     is_valid_time = (
-        F.col(col_name).rlike(r"^[0-9]{4}$") &
-        hour.between(0, 23) &
-        minute.between(0, 59)
+        F.col(col_name).rlike(r"^[0-9]{4}$")
+        & hour.between(0, 23)
+        & minute.between(0, 59)
     )
 
     return F.when(is_valid_time, F.trim(F.col(col_name))).otherwise(F.lit(None).cast("string"))
