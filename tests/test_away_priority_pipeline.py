@@ -11,12 +11,9 @@ from tests.fixtures.sample_data import make_source_row
 
 from pyspark.sql.types import StructField, StructType, StringType
 
-
 def _away_df(spark: SparkSession, row_override: dict):
     row = make_source_row(**row_override)
-    schema = StructType([
-        StructField(col, StringType(), True) for col in row.keys()
-    ])
+    schema = StructType([StructField(col, StringType(), True) for col in row.keys()])
     df = spark.createDataFrame([row], schema=schema)
     _, _, _, _, away_df, _ = route_by_phone_type(df, {})
     return away_df

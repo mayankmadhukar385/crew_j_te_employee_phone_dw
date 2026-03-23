@@ -103,8 +103,9 @@ def build_home_schedule(df: DataFrame) -> DataFrame:
     result = (
     home_seq_df
     .filter(
-    F.col("EMP_NBR").cast("int").isNotNull() &
-    F.col("LKP_CALL_PRTY").cast("int").isNotNull())
+        F.expr("try_cast(EMP_NBR as int) is not null") &
+        F.expr("try_cast(LKP_CALL_PRTY as int) is not null")
+    )
     .withColumn("CALL_PRTY", F.col("CALL_PRTY") + F.lit(1))
     .withColumn("CALL_LIST", F.lit("HOME"))
     .withColumn("TELE_HOME_PRI_FROM", _validate_time("TELE_HOME_PRI_FROM"))
