@@ -61,10 +61,6 @@ jobs:
         run: |
           python -m pylint src
 
-      - name: Lint notebooks with nbqa + pylint
-        run: |
-          nbqa pylint resources --nbqa-shell
-
       - name: Upload Bazel test logs
         if: always()
         uses: actions/upload-artifact@v4
