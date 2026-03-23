@@ -46,6 +46,11 @@ disable = [
     "missing-module-docstring",
     "missing-class-docstring",
     "missing-function-docstring",
+    "too-many-locals",
+    "too-many-statements",
+    "too-many-arguments",
+    "too-many-positional-arguments",
+    "duplicate-code",
 
     # Ruff handles formatting/import sorting; keep pylint focused on correctness
     "line-too-long",
