@@ -14,5 +14,6 @@ py_test(
     "@pip//delta_spark",
     "@pip//pyyaml",
     "@pip//py4j",
+    "@pip//prettytable",
 ]
 )
