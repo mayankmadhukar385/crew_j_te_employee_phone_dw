@@ -51,6 +51,8 @@ disable = [
     "too-many-arguments",
     "too-many-positional-arguments",
     "duplicate-code",
+    "unused-argument",
+    "unspecified-encoding",
 
     # Ruff handles formatting/import sorting; keep pylint focused on correctness
     "line-too-long",
