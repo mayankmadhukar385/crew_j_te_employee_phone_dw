@@ -36,10 +36,10 @@ from src.transformations.phone_union import union_all_phone_types
 from tests.fixtures.sample_data import make_source_row
 
 
+from pyspark.sql.types import StructField, StructType, StringType
+
 def _build_integration_dataset(spark: SparkSession):
-    """Build a synthetic dataset covering all routing paths."""
     rows = [
-        # Employee with EMERGENCY + BASIC (H) + HOME schedule
         make_source_row(
             EMP_NBR="111111111",
             PH_NBR="2125551001",
@@ -49,7 +49,6 @@ def _build_integration_dataset(spark: SparkSession):
             TELE_HOME_PRI_TO_1="1700",
             TELE_HOME_PRI_SEQ_1_1="1",
         ),
-        # Employee with TEMP phone
         make_source_row(
             EMP_NBR="222222222",
             PH_NBR=None,
@@ -57,7 +56,6 @@ def _build_integration_dataset(spark: SparkSession):
             TELE_TEMP_PH_DATE="20241231",
             TELE_TEMP_PH_TIME="235900",
         ),
-        # Employee with BASIC (A) → AWAY routing
         make_source_row(
             EMP_NBR="333333333",
             PH_NBR=None,
@@ -67,9 +65,7 @@ def _build_integration_dataset(spark: SparkSession):
             TELE_AWAY_PRI_TO_1="1800",
             TELE_AWAY_PRI_SEQ_1_1="1",
         ),
-        # Invalid EMP_NBR → ERROR
         make_source_row(EMP_NBR="INVALID", PH_NBR="2125554001"),
-        # Employee with BASIC (B) → both HOME and AWAY routing
         make_source_row(
             EMP_NBR="444444444",
             PH_NBR="2125555001",
@@ -77,7 +73,11 @@ def _build_integration_dataset(spark: SparkSession):
             BASIC_PH_HOME_AWAY_CD_1="B",
         ),
     ]
-    return spark.createDataFrame(rows)
+
+    schema = StructType([
+        StructField(col, StringType(), True) for col in rows[0].keys()
+    ])
+    return spark.createDataFrame(rows, schema=schema)
 
 
 def test_full_pipeline_end_to_end(spark, config):

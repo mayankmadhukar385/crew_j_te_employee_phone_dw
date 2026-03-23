@@ -64,25 +64,15 @@ def _null_clean_string(col_name: str) -> F.Column:
     return F.when(trimmed == "", F.lit(None).cast("string")).otherwise(trimmed).alias(col_name)
 
 
-def route_by_phone_type(
-    df: DataFrame, config: dict[str, Any]
-) -> tuple[DataFrame, DataFrame, DataFrame, DataFrame, DataFrame, DataFrame]:
-    """Route source rows to six phone-type streams (SEPARATE_PHTYPE_TFM).
+from pyspark.sql import functions as F
 
-    Each output is an independent filter+select — routing is multi-cast (NOT mutually exclusive).
-    One source row can appear in multiple output streams.
+def route_by_phone_type(df: DataFrame, config: dict[str, Any]) -> tuple[DataFrame, DataFrame, DataFrame, DataFrame, DataFrame, DataFrame]:
+    valid_emp = F.expr("try_cast(EMP_NBR as int) is not null")
+    valid_ph = F.expr("try_cast(PH_NBR as bigint) is not null")
+    valid_temp_ph = F.expr("try_cast(TEMP_PH_NBR as bigint) is not null")
 
-    Args:
-        df: Source DataFrame from read_source (71 columns, LNK_OUT_TDC schema).
-        config: Pipeline configuration dictionary.
-
-    Returns:
-        Tuple of (emergency_df, temp_df, basic_df, home_df, away_df, error_df).
-    """
-    # ── EMERGENCY_IN_TFM ────────────────────────────────────────────────────────
-    # Filter: ISVALID("INT32", EMP_NBR) and isvalid("int64", PH_NBR)
     emergency_df = df.filter(
-        F.col("EMP_NBR").cast("int").isNotNull() & F.col("PH_NBR").cast("long").isNotNull()
+        valid_emp & valid_ph
     ).select(
         F.col("EMP_NBR"),
         F.lit("EMERGENCY").alias("CALL_LIST"),
@@ -100,10 +90,8 @@ def route_by_phone_type(
         _null_clean_string("USER_ID"),
     )
 
-    # ── TEMP_TYPE_TFM ────────────────────────────────────────────────────────────
-    # Filter: is_valid("INT32",EMP_NBR) && is_valid("int64",TEMP_PH_NBR)
     temp_df = df.filter(
-        F.col("EMP_NBR").cast("int").isNotNull() & F.col("TEMP_PH_NBR").cast("long").isNotNull()
+        valid_emp & valid_temp_ph
     ).select(
         F.col("EMP_NBR"),
         F.lit("TEMP").alias("CALL_LIST"),
@@ -121,9 +109,7 @@ def route_by_phone_type(
         _null_clean_string("USER_ID"),
     )
 
-    # ── BASIC_TYPE_TFM ───────────────────────────────────────────────────────────
-    # Filter: is_valid("INT32",EMP_NBR)
-    basic_df = df.filter(F.col("EMP_NBR").cast("int").isNotNull()).select(
+    basic_df = df.filter(valid_emp).select(
         F.col("EMP_NBR"),
         F.lit("BASIC").alias("CALL_LIST"),
         F.lit("0001").alias("EFF_START_TM"),
@@ -139,8 +125,6 @@ def route_by_phone_type(
         _null_clean_string("USER_ID"),
     )
 
-    # ── HOME_TYPE_CPY ────────────────────────────────────────────────────────────
-    # No filter — unconditional passthrough of HOME priority schedule columns
     home_df = df.select(
         F.col("EMP_NBR"),
         *[F.col(f"TELE_HOME_PRI_FROM_{i}") for i in range(1, 4)],
@@ -150,23 +134,14 @@ def route_by_phone_type(
         _null_clean_string("USER_ID"),
     )
 
-    # ── AWAY_TYPE_CPY ────────────────────────────────────────────────────────────
-    # No filter — rename TELE_AWAY_PRI_* → TELE_HOME_PRI_* for pipeline reuse
     away_df = df.select(
         F.col("EMP_NBR"),
         *[F.col(f"TELE_AWAY_PRI_FROM_{i}").alias(f"TELE_HOME_PRI_FROM_{i}") for i in range(1, 4)],
         *[F.col(f"TELE_AWAY_PRI_TO_{i}").alias(f"TELE_HOME_PRI_TO_{i}") for i in range(1, 4)],
-        *[
-            F.col(f"TELE_AWAY_PRI_SEQ_{s}_{g}").alias(f"TELE_HOME_PRI_SEQ_{s}_{g}")
-            for g in range(1, 4)
-            for s in range(1, 6)
-        ],
+        *[F.col(f"TELE_AWAY_PRI_SEQ_{s}_{g}").alias(f"TELE_HOME_PRI_SEQ_{s}_{g}") for g in range(1, 4) for s in range(1, 6)],
         _upd_ts(),
         _null_clean_string("USER_ID"),
     )
 
-    # ── LNK_OUT_ERR_SEQ ─────────────────────────────────────────────────────────
-    # Filter: NOT isvalid("int32", EMP_NBR) — all source columns passthrough
-    error_df = df.filter(F.col("EMP_NBR").cast("int").isNull())
-
+    error_df = df.filter(~valid_emp)
     return emergency_df, temp_df, basic_df, home_df, away_df, error_df
