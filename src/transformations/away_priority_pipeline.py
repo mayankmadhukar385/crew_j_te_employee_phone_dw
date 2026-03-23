@@ -60,3 +60,4 @@ def build_away_schedule(df: DataFrame) -> DataFrame:
     .withColumn("TELE_HOME_PRI_FROM", _validate_time("TELE_HOME_PRI_FROM"))
     .withColumn("TELE_HOME_PRI_TO", _validate_time("TELE_HOME_PRI_TO"))
     )
+    return result
